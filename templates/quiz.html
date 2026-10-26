@@ -1,100 +1,133 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
 
-    <title>MCQ Quiz - Question</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>MCQ Quiz</title>
 
     <!-- Bootstrap 4.5 CSS CDN -->
-    <link rel="stylesheet"
-          href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css">
-</head>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css"
+    />
+  </head>
 
-<body class="bg-light">
-
+  <body class="bg-light">
     <!-- Navigation Bar -->
     <nav class="navbar navbar-dark bg-primary">
-        <a class="navbar-brand" href="/">MCQ Quiz Application</a>
+      <a class="navbar-brand" href="/"> MCQ Quiz Application </a>
     </nav>
 
-    <!-- Quiz Content -->
-    <div class="container mt-5">
-        <div class="row justify-content-center">
-            <div class="col-md-8">
+    <!-- Main Content -->
+    <div class="container mt-5 mb-5">
+      <div class="row justify-content-center">
+        <div class="col-lg-9">
+          {% if error %}
 
-                <div class="card shadow">
+          <div class="alert alert-danger">{{ error }}</div>
 
-                    <div class="card-header bg-primary text-white">
-                        <h4 class="mb-0">Question 1 of 1</h4>
-                    </div>
+          <a href="{{ url_for('index') }}" class="btn btn-primary">
+            Back to Home
+          </a>
 
-                    <div class="card-body p-4">
+          {% else %}
 
-                        <!-- Display Validation Error -->
-                        {% if error %}
-                            <div class="alert alert-danger">
-                                {{ error }}
-                            </div>
-                        {% endif %}
+          <!-- Quiz Heading -->
+          <div class="card shadow mb-4">
+            <div class="card-body">
+              <h2 class="text-primary">Multiple Choice Quiz</h2>
 
-                        <!-- Quiz Form -->
-                        <form action="{{ url_for('submit') }}" method="POST">
+              <p class="text-muted mb-0">
+                Answer all five questions. Each question has four options.
+                Select only one option per question.
+              </p>
+            </div>
+          </div>
 
-                            <!-- Display Question -->
-                            <h5 class="mb-4">
-                                {{ question.question }}
-                            </h5>
+          <!-- Quiz Form -->
+          <form action="{{ url_for('result') }}" method="POST">
+            <!-- Send the original mapping to the backend -->
+            <input
+              type="hidden"
+              name="question_mapping"
+              value="{{ question_mapping | tojson | forceescape }}"
+            />
 
-                            <!-- Display Four Options -->
-                            {% for key, option in question.options.items() %}
+            <!-- Manual question counter -->
+            {% set question_counter = namespace(value=0) %}
 
-                                <div class="custom-control custom-radio mb-3">
+            <!-- Loop through all questions -->
+            {% for question_id, question_data in question_mapping.items() %} {%
+            set question_counter.value = question_counter.value + 1 %}
 
-                                    <input
-                                        type="radio"
-                                        class="custom-control-input"
-                                        id="option{{ key }}"
-                                        name="answer"
-                                        value="{{ key }}"
-                                    >
+            <div class="card shadow mb-4">
+              <!-- Question Header -->
+              <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                  Question {{ question_counter.value }} of {{ question_mapping |
+                  length }}
+                </h5>
+              </div>
 
-                                    <label
-                                        class="custom-control-label"
-                                        for="option{{ key }}"
-                                    >
-                                        {{ key }}. {{ option }}
-                                    </label>
+              <!-- Question Body -->
+              <div class="card-body">
+                <!-- Question Text -->
+                <h5 class="mb-4">{{ question_data.question }}</h5>
 
-                                </div>
+                <!-- Loop through the four options -->
+                {% for checkbox_id, option_data in question_data.options.items()
+                %}
 
-                            {% endfor %}
+                <div class="custom-control custom-checkbox mb-3">
+                  <input
+                    type="checkbox"
+                    class="custom-control-input"
+                    id="checkbox_{{ checkbox_id }}"
+                    name="selected_ids"
+                    value="{{ checkbox_id }}"
+                  />
 
-                            <hr>
-
-                            <!-- Submit Button -->
-                            <button type="submit" class="btn btn-success btn-block">
-                                Submit Answer
-                            </button>
-
-                            <!-- Back to Home -->
-                            <a href="{{ url_for('index') }}"
-                               class="btn btn-outline-secondary btn-block mt-2">
-                                Back to Home
-                            </a>
-
-                        </form>
-
-                    </div>
+                  <label
+                    class="custom-control-label"
+                    for="checkbox_{{ checkbox_id }}"
+                  >
+                    {{ option_data.text }}
+                  </label>
                 </div>
 
+                {% endfor %}
+              </div>
             </div>
+
+            {% endfor %}
+
+            <!-- Submit Button -->
+            <div class="card shadow">
+              <div class="card-body">
+                <button type="submit" class="btn btn-success btn-lg btn-block">
+                  Submit Quiz
+                </button>
+
+                <a
+                  href="{{ url_for('index') }}"
+                  class="btn btn-outline-secondary btn-block mt-3"
+                >
+                  Cancel Quiz
+                </a>
+              </div>
+            </div>
+          </form>
+
+          {% endif %}
         </div>
+      </div>
     </div>
 
     <!-- Bootstrap 4.5 JavaScript CDN -->
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.bundle.min.js"></script>
 
-</body>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
 </html>
